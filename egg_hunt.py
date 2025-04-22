@@ -66,8 +66,14 @@ def fetch_personal_stats_worker():
             member_queue.task_done()
         time.sleep(0.6)  # Respect API rate limit (100 calls per minute)
 
-# Fetch faction members
-member_names = fetch_faction_members()
+# Fetch faction members only if members.json doesn't already exist
+if not os.path.exists("members.json"):
+    member_names = fetch_faction_members()
+else:
+    print("[INFO] members.json already exists. Loading faction members from file...")
+    with open("members.json", "r") as f:
+        data = json.load(f)
+        member_names = {str(member["id"]): member.get("name", "Unknown") for member in data.get("members", [])}
 
 # Add member IDs to the queue
 print("[INFO] Adding member IDs to the queue...")
